@@ -2,7 +2,7 @@ import streamlit as st
 import pdfplumber
 
 # Path to the PDF file
-PDF_PATH = "UTILITIESCODE.pdf"
+PDF_PATH = "utilitiescode.pdf"
 
 # Function to get the content of a specific page
 @st.cache_data
