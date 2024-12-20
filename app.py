@@ -5,19 +5,26 @@ import pdfplumber
 def extract_pdf_content(pdf_path):
     content = {}
     with pdfplumber.open(pdf_path) as pdf:
-        for page in pdf.pages[:5]:  # Process only the first 5 pages
+        for page in pdf.pages:
             text = page.extract_text()
             if text:
+                # Example: Group content by page numbers
                 content[f"Page {page.page_number}"] = text.strip()
     return content
-
-# Extract content from the PDF
-pdf_file_path = "UTILITIESCODE.pdf"
-pdf_content = extract_pdf_content(pdf_file_path)
 
 # Streamlit App Layout
 st.title("Utilities Code Search App")
 st.markdown("Search the **Utilities Code** and view results grouped by chapters or sections.")
+
+# Path to the PDF file
+pdf_file_path = "UTILITIESCODE.pdf"
+
+# Load and process the PDF
+try:
+    pdf_content = extract_pdf_content(pdf_file_path)
+except Exception as e:
+    st.error(f"Error processing PDF: {e}")
+    pdf_content = {}
 
 # Search bar
 search_query = st.text_input("Enter search term", "").lower()
