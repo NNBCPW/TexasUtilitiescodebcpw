@@ -1,44 +1,55 @@
 import streamlit as st
 import pdfplumber
 
-# Function to extract and group content by titles
-def extract_pdf_content(pdf_path):
-    content = {}
-    with pdfplumber.open(pdf_path) as pdf:
-        for page in pdf.pages:
-            text = page.extract_text()
-            if text:
-                # Example: Group content by page numbers
-                content[f"Page {page.page_number}"] = text.strip()
-    return content
-
-# Streamlit App Layout
-st.title("Utilities Code Search App")
-st.markdown("Search the **Utilities Code** and view results grouped by chapters or sections.")
-
 # Path to the PDF file
-pdf_file_path = "UTILITIESCODE.pdf"
+PDF_PATH = "UTILITIESCODE.pdf"
 
-# Load and process the PDF
-try:
-    pdf_content = extract_pdf_content(pdf_file_path)
-except Exception as e:
-    st.error(f"Error processing PDF: {e}")
-    pdf_content = {}
+# Function to get the content of a specific page
+@st.cache_data
+def get_page_content(pdf_path, page_number):
+    with pdfplumber.open(pdf_path) as pdf:
+        if page_number < len(pdf.pages):
+            page = pdf.pages[page_number]
+            return page.extract_text()
+        else:
+            return None
 
-# Search bar
-search_query = st.text_input("Enter search term", "").lower()
+# Function to get total number of pages
+@st.cache_data
+def get_total_pages(pdf_path):
+    with pdfplumber.open(pdf_path) as pdf:
+        return len(pdf.pages)
+
+# App layout
+st.title("Utilities Code Search App")
+st.markdown("Search the **Utilities Code** by specific pages or sections.")
+
+# Get the total number of pages
+total_pages = get_total_pages(PDF_PATH)
+
+# User selects a page range
+start_page, end_page = st.slider(
+    "Select page range to search",
+    min_value=1,
+    max_value=total_pages,
+    value=(1, 10),
+    step=1,
+)
+
+# User enters a search query
+search_query = st.text_input("Enter a keyword to search").lower()
 
 # Display results
 if search_query:
     st.subheader("Search Results")
     results_found = False
 
-    for title, text in pdf_content.items():
-        if search_query in text.lower() or search_query in title.lower():
+    for page_num in range(start_page - 1, end_page):
+        content = get_page_content(PDF_PATH, page_num)
+        if content and search_query in content.lower():
             results_found = True
-            with st.expander(title):
-                st.write(text)
+            with st.expander(f"Page {page_num + 1}"):
+                st.write(content)
 
     if not results_found:
         st.warning("No results found for your search query.")
