@@ -5,14 +5,10 @@ import pdfplumber
 def extract_pdf_content(pdf_path):
     content = {}
     with pdfplumber.open(pdf_path) as pdf:
-        for page in pdf.pages:
+        for page in pdf.pages[:5]:  # Process only the first 5 pages
             text = page.extract_text()
-            # Split by titles like "CHAPTER", "TITLE", or other delimiters
-            for section in text.split("CHAPTER"):
-                if section.strip():
-                    lines = section.split("\n")
-                    title = f"CHAPTER {lines[0].strip()}" if lines[0].strip() else "Miscellaneous"
-                    content[title] = "\n".join(lines[1:]).strip()
+            if text:
+                content[f"Page {page.page_number}"] = text.strip()
     return content
 
 # Extract content from the PDF
